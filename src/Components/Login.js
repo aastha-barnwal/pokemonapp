@@ -1,12 +1,19 @@
 
+
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { login } from '../redux/counter/authSlics';
+import { login } from '../redux/counter/authSlics'; 
+import {store} from '../redux/store'; // Adjust the path as needed
+
+
+
 
 const Login = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -22,18 +29,15 @@ const Login = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    try {
-      const result = await dispatch(login({ username, password })); // Await the dispatch action
-      if (result.meta.requestStatus === 'fulfilled') {
-        navigate(`/auth/${username}`);
-      } else {
-        navigate('/register'); // Navigate to register if credentials don't match
-      }
-    } catch (err) {
-      console.error('Error during login:', err);
-      navigate('/register'); // Navigate to register on error
-    }
+    dispatch(login({ username, password }));
+    const state = store.getState(); // Get the updated state from the Redux store
+    if (state.auth.user) {
+    navigate(`/auth/${username}`);
+  } else {
+    setError(state.auth.error || 'Login failed. Please check your credentials and try again.');
+  }
   };
+  
 
   const goToRegister = () => {
     navigate('/register');
@@ -72,6 +76,7 @@ const Login = () => {
         <button type="submit" className="btn btn-primary">Login</button>
       </form>
       {authError && <div className="alert alert-danger mt-3">{authError}</div>}
+      {error && <div className="alert alert-danger mt-3">{error}</div>}
       <div className="mt-3">
         <p className="d-inline">Don't have an account? </p>
         <button className="btn btn-secondary ms-2" onClick={goToRegister}>
@@ -83,3 +88,5 @@ const Login = () => {
 };
 
 export default Login;
+
+
