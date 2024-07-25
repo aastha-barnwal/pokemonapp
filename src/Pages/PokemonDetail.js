@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Card} from 'react-bootstrap';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector} from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../redux/counter/authSlics';
 
@@ -12,13 +12,17 @@ const PokemonDetail = () => {
   const [loading, setLoading] = useState(true); //data is being fetch or not
   const dispatch = useDispatch(); //redux action
   const navigate = useNavigate(); //navigate to different url
-
+  const user = useSelector((state) => state.auth.user);
   // function on clicking logout 
   const handleLogout = () => {
     dispatch(logout()); // Dispatch the logout action
     navigate('/login'); // Redirect to login page after logout
   };
-
+  useEffect(() => {
+    if (user && user.username !== username) {
+      navigate('/register');
+    }
+  }, [user, username, navigate]);
   // renders at start when pokemon name set
   useEffect(() => {
     const fetchPokemonDetail = async () => {

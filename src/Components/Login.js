@@ -1,44 +1,43 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { login } from '../redux/counter/authSlics';
 
-
-
 const Login = () => {
-  
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const dispatch = useDispatch(); // to use redux state function
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const authError = useSelector((state) => state.auth.error); // Selector for authentication error
 
-  const navigate = useNavigate(); // navigate to other url
-
-  // set username
-  const handleUsernameChange = (e)=>{
+  const handleUsernameChange = (e) => {
     setUsername(e.target.value);
-    
-  }
-  //set password
-  const handlePasswordChange = (e)=>{
+  };
+
+  const handlePasswordChange = (e) => {
     setPassword(e.target.value);
-    
-  }
-  // when login form submitted
-  const submitHandler = (e)=>{
+  };
+
+  const submitHandler = async (e) => {
     e.preventDefault();
-    try{
-      dispatch(login({ username, password })); // user authentication action
-      navigate(`/auth/:${username}`);
-    }catch(err){
-      navigate('/register'); //if credentials doesn't match
+    try {
+      const result = await dispatch(login({ username, password })); // Await the dispatch action
+      if (result.meta.requestStatus === 'fulfilled') {
+        navigate(`/auth/${username}`);
+      } else {
+        navigate('/register'); // Navigate to register if credentials don't match
+      }
+    } catch (err) {
+      console.error('Error during login:', err);
+      navigate('/register'); // Navigate to register on error
     }
-    
-  }
-  //navigate to register
-  const goToRegister = ()=>{
+  };
+
+  const goToRegister = () => {
     navigate('/register');
-  }
+  };
 
   return (
     <div className="container mt-5">
@@ -53,7 +52,7 @@ const Login = () => {
             name="username"
             value={username}
             onChange={handleUsernameChange}
-            placeholder='Username'
+            placeholder="Username"
             required
           />
         </div>
@@ -66,12 +65,13 @@ const Login = () => {
             name="password"
             value={password}
             onChange={handlePasswordChange}
-            placeholder='Password'
+            placeholder="Password"
             required
           />
         </div>
         <button type="submit" className="btn btn-primary">Login</button>
       </form>
+      {authError && <div className="alert alert-danger mt-3">{authError}</div>}
       <div className="mt-3">
         <p className="d-inline">Don't have an account? </p>
         <button className="btn btn-secondary ms-2" onClick={goToRegister}>
